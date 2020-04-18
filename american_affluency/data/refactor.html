@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset=utf-8 />
+  <title>Wealth/Income/Poverty</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+    integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+    crossorigin="" />
+  <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      /* background-image: url("graphics/housing.jpeg"); 
+      background-repeat: no-repeat;
+      background-size: 100%; */
+      background: whitesmoke;
+      font-family: Lato, sans-serif;
+      color: #0D0000;
+    }
+
+    header {
+      width: 80%;
+      margin: 10px auto 10px auto;
+    }
+
+    h1 {
+      display: inline-block;
+      margin-right: 20px;
+      color: #001323;
+    }
+
+    h2 {
+      display: inline-block;
+      color: #001323;
+    }
+
+    #map {
+      width: 80%;
+      height: 540px;
+      margin: 10px 10%;
+      background: whitesmoke;
+      border: 2px solid #dddedf;
+    }
+
+    footer {
+      opacity: 75%;
+      padding: 6px 10%;
+      width: 80%;
+
+    }
+
+    p {
+      background-color: whitesmoke;
+      font-size: 1em;
+      color: #001323;
+    }
+
+    .row {
+      background-color: whitesmoke;
+      font-size: 1em;
+      color: #001323;
+      margin: 10px 10%;
+      border: 2px solid #dddedf;
+    }
+
+    .legend {
+      padding: 6px 8px;
+      font-size: 1em;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+    }
+
+    .legend h3 {
+      font-size: 1.1em;
+      /* font-weight: normal; */
+      font-weight: bolder;
+      color: #001323;
+      margin: 0 0 10px 0;
+    }
+
+    .leaflet-bar a {
+      /* Override the default style for Leaflet's zoom */
+      background: rgba(100, 100, 100, 0.9);
+      color: rgba(244, 244, 244, 0.8);
+    }
+
+    .legend span {
+      width: 20px;
+      height: 20px;
+      float: left;
+      margin: 0 10px 4px 0;
+    }
+
+    .legend label {
+      font-size: 1.1em;
+    }
+
+    .legend label:after {
+      content: '';
+      display: block;
+      clear: both;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Inequality</h1>
+    <h2>wealth and income inequality</h2>
+  </header>
+
+  <div id='map'></div>
+
+
+  <footer>
+    <div class="row">
+      <p>Map authored by Alexander Buck</p>
+      <p> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
+        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
+        laborum.</p>
+  </footer>
+
+  <!-- Load scripts using Subresource Integrity (SRI) is
+            a security feature that enables browsers to verify that resources they fetch (from a CDN) are delivered
+            without unexpected manipulation. -->
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+    integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+    crossorigin=""></script>
+  <script src='https://unpkg.com/simple-statistics@7.0.6/dist/simple-statistics.min.js'>
+  </script>
+
+  <script>
+    //create layer groups for dynamic layers
+    let wealth = L.layerGroup();
+    let income = L.layerGroup();
+    //Leaflet Map options to set center and zoom level.  Zoom control disabled.
+    var options = {
+      center: [37.84, -101.37],
+      zoom: 4,
+      minZoom: 0,
+      zoomControl: false,
+      layers: [wealth]
+    }
+
+    //instantiate map use options object
+    var map = L.map('map', options);
+
+    //set global variables
+    var attributeValue = "stats_wealth_percent";
+    var incomeValue = "stats_median_income";
+    var stateName = "NAME";
+    var povertyValue = "stats_percent_poverty";
+
+    /**
+     * Get class breaks, draw legend based on breaks and format popup.
+     *  
+     * @param {geoJson} - dataLayer geojson layer and styling
+     * @param {string} - attribute global variable for different attributes
+     * 
+     * @return {void}
+     **/
+
+    function drawMap(dataLayer, attribute) {
+      // call getClassBreaks and assign it to variable
+      var breaks = getClassBreaks(dataLayer, attribute);
+
+      //call draw legend and create with breaks parameter
+      drawLegend(breaks, attribute);
+
+      // for each layer in dataLayer set colors based on breaks variable and format popup on mouseover
+      dataLayer.eachLayer(function (layer) {
+
+        var props = layer.feature.properties;
+
+        layer.setStyle({
+          fillColor: getColor(props[attribute], breaks)
+        });
+
+        if (attribute == 'stats_wealth_percent') {
+          layer.addTo(wealth);
+          var popup =
+            `<b>Estates >= $3M:</b> ${Number(layer.feature.properties.stats_num_wealth).toLocaleString()} <br><b>State Pop:</b>
+          ${Number(layer.feature.properties.stats_population_total).toLocaleString()} <br><b>Percentage:</b>:
+          ${Number(layer.feature.properties.stats_wealth_percent).toLocaleString()}%`;
+          // console.log(layer.feature.properties)
+          layer.bindPopup(popup)
+        } else {
+          var popup =
+            `<b>State Name:</b> ${Number(layer.feature.properties[stateName]).toLocaleString()} <br><b>Median Household Income:</b> 
+        $${Number(layer.feature.properties[incomeValue]).toLocaleString()}</br>`;
+          // console.log(layer.feature.properties)
+          layer.bindPopup(popup)
+          layer.addTo(income);
+        }
+
+        //layer.addTo(map);
+      });
+
+    } // end drawMap
+
+    /**
+     * Create Class breaks for legend and layer symbology
+     *  
+     * @param {geoJson} - geojson layer and styling
+     * @param {string} - attribute global variable for different attributes
+     * 
+     * @return {array} - statistical breaks based on dataset values
+     **/
+
+    function getClassBreaks(dataLayer, attribute) {
+      var values = [];
+
+      dataLayer.eachLayer(function (layer) {
+        var props = layer.feature.properties
+        var value = props[attribute];
+        //console.log(layer.feature.properties)
+
+        // push that value to the array
+        if (value != null) {
+          values.push(Number(value));
+        }
+      });
+
+      // determine similar clusters
+      var clusters = ss.ckmeans(values, 7);
+
+      // create an array of the lowest value within each cluster
+      var breaks = clusters.map(function (cluster) {
+        return [cluster[0], cluster.pop()];
+      });
+      //console.log(breaks);
+      // return Array of class breaks
+      return breaks;
+    } // end getClassBreaks 
+
+
+
+    /**
+     * Create legend based on breaks from getClassBreaks function
+     *  
+     * @param {array} - array of statistical breaks
+     * @param {string} - attribute global variable for different attributes
+     * 
+     * @return {html} - div representing legend with spans of color and values
+     **/
+
+    function drawLegend(breaks, attribute) {
+
+      // create a new Leaflet control object, and position it top left
+      var legend = L.control({
+        position: 'topleft'
+      });
+
+      // when the legend is added to the map
+      legend.onAdd = function () {
+
+        // create a new HTML <div> element and give it a class name of "legend"
+        let legendTitle = "";
+        var div = L.DomUtil.create('div', 'legend');
+        if (attribute == 'stats_wealth_percent') {
+          legendTitle = "Percent of State Population with <br> Estate Value $3 Million (or more)";
+        } else if (attribute == 'incomeValue') {
+          legendTitle = "Median Household Income";
+        } else {
+          legendTitle = "Median Household Income";
+        }
+
+
+        // first append an <h3> tag to the div holding the current attribute
+        // and norm values (i.e., the mapped phenomena)
+        div.innerHTML = "<h3>" + legendTitle + "</h3>";
+
+        // for each of our breaks
+        for (var i = 0; i < breaks
+          .length; i++) {
+          // determine the color associated with each break value, 
+          // including the lower range value
+          var color = getColor(breaks[i][0], breaks);
+          // concatenate a <span> tag styled with the color and the range values
+          // of that class and include a label with the low and a high ends of that class range
+          div.innerHTML +=
+            `<span style="background:${color}"></span><label>$${(breaks[i][0]*1).toLocaleString()}&mdash; 
+            ${(breaks[i][1]*1).toLocaleString()}</label>`;
+        }
+
+        // return the populated div to be added to the map
+        return div;
+      };
+
+      // add the legend to the map
+      legend.addTo(map);
+    } //end INCOME LAYER drawLegend
+
+    function getColor(d, breaks) {
+      if (d <= breaks[0][1]) {
+        return '#edf8fb';
+      } else if (d <= breaks[1][1]) {
+        return '#ccece6';
+      } else if (d <= breaks[2][1]) {
+        return '#99d8c9';
+      } else if (d <= breaks[3][1]) {
+        return '#66c2a4';
+      } else if (d <= breaks[4][1]) {
+        return '#41ae76';
+      } else if (d <= breaks[5][1]) {
+        return '#238b45';
+      } else if (d <= breaks[6][1]) {
+        return '#005824';
+      }
+    } // end getColor
+
+    var wealthLayer = $.getJSON("data/stats.geojson", function (data) {
+      //console.log(data)
+      var dataLayer = L.geoJson(data, {
+        style: function (feature) {
+          return {
+            color: '#dddddd',
+            weight: .5,
+            fillOpacity: 1,
+            fillColor: '#1f78b4'
+          }
+        }
+      })
+      drawMap(dataLayer, attributeValue);
+    });
+
+    var incomeLayer = $.when(wealthLayer).done(function () {
+      // load, filter, and style the state outline
+      $.getJSON("data/stats.geojson", function (data) {
+        //console.log(data)
+        var incomeDataLayer = L.geoJson(data, {
+          style: function (feature) {
+            return {
+              color: '#dddddd',
+              weight: .5,
+              fillOpacity: 1,
+              fillColor: '#1f78b4'
+            };
+          },
+        })
+        drawMap(incomeDataLayer, incomeValue);
+      });
+    });
+
+    var sourceLayers = {
+      "<b style='color: #ae60ff'>Wealth</b>": wealth,
+      "<b style='color: #b22222'>Income</b>": income,
+      //"<b style='color: #4d8c57'> Poverty</b>": povertyLayer,
+    }
+
+    L.control.layers(null, sourceLayers).addTo(map);
+
+  </script>
+
+</body>
+
+</html>
