@@ -1,0 +1,84 @@
+/*!
+ * Start Bootstrap - Heroic Features (https://startbootstrap.com/template-overviews/heroic-features)
+ * Copyright 2013-2017 Start Bootstrap
+ * Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap-heroic-features/blob/master/LICENSE)
+ */
+
+body {
+  font-family: Lato;
+}
+
+header {
+  padding: 154px 0 100px;
+  background-image: url('../images/Hotel_Anna_Hike.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+h1 {
+  text-shadow: 2px 2px 2px black;
+  vertical-align: text-top;
+  text-align: center;
+  color: #f7882f;
+}
+
+/* media query when the media is wider than 992px */
+@media (min-width: 992px) {
+  header {
+    padding: 156px 0 100px;
+  }
+}
+
+.portfolio-item {
+  margin-bottom: 30px;
+}
+
+section {
+  padding: 80px 0;
+}
+
+a {
+  color: #8eaebd;
+}
+
+a:hover {
+  color: #f7882f;
+}
+
+.navbar {
+  background-color: #6b7a8f;
+}
+
+.projects {
+   background-color: #f0eee7; 
+}
+
+.card-body {
+  background-color: #faf9f4;
+  color: #8e8d8a;
+}
+
+.about {
+  background-color: #faf9f4;
+}
+
+h2 {
+  color: #8e8d8a;
+}
+
+.lead {
+  color: #8e8d8a;
+}
+
+h3 {
+  color: #8e8d8a;
+}
+
+dl {
+  color: #8e8d8a;
+}
+
+.py-5 {
+  background-color: #6b7a8f;
+  color: #8eaebd;
+}
