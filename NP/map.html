@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8' />
+  <title>Natioanl Parks and Monuments of the Rocky Mountain West</title> <!--Change this!! -->
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.49.0/mapbox-gl.js'></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.49.0/mapbox-gl.css' rel='stylesheet' />
+  <style>
+    body { margin:0; padding:0; }
+    #map { position:absolute; top:0; bottom:0; width:100%; }
+  </style>
+</head>
+<body>
+
+<div id='map'></div>
+
+  <script>
+    // Change this to your Token ----------------------
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYWxleGJ1Y2szMjgiLCJhIjoiY2szcDZsdmFsMW9rbDNubjMydm9rNGJpMyJ9.05szss9EHEoVBbGYajbPZA';
+    // ------------------------------------------------
+
+    var map = new mapboxgl.Map({
+      container: 'map',
+
+      // Change this to your style --------------------
+      style: 'mapbox://styles/alexbuck328/ck3vbzubo44zv1dnr6pfy6hmv',
+      // ----------------------------------------------
+
+      // Change to your location ----------------------
+      zoom: 15.00,
+      center: [-110.545825, 44.596696]
+      // ----------------------------------------------
+
+    });
+
+    // Add geolocate control to the map.
+     map.addControl(new mapboxgl.GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: true
+      },
+      trackUserLocation: true
+    }));
+  </script>
+
+</body>
+
+</html>

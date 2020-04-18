@@ -1,0 +1,3 @@
+# National Parks and Monuments of the Rocky Mountain West
+
+This map displays the locations of National Parks and National Monuments across the Rocky Mountain West. The Rocky Mountain states are: New Mexico, Arizona, Nevada, Utah, Colorado, Wyoming, Idaho, and Montana. The region encompasses some of the country's most dramatic landscapes. Visiting the region instills wonder. The region is home to the world's first National Park, Yellowstone. It is for that reason, this map showcases the area. Hopefully this will inspire you to make a trip to this historic region and explore it's wonders and stunning natural beauty!
